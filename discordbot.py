@@ -1,5 +1,6 @@
 import discord
 import random
+import re
 import google.generativeai as genai
 
 
@@ -31,14 +32,16 @@ async def on_message(message):
 
     if "!sri" in message.content:
         if "!sri help" in message.content:
-            answer = "!sri help,!sri housou,!sri info"
-            embed_title="Help"
-            print(answer.text)
             # await message.channel.send(answer.text)
-            embed = discord.Embed(title=embed_title,description=answer.text)
+            embed = discord.Embed(
+                title="help",)
+            embed.add_field(name="!sri help",value="ヘルプを表示。",inline=False)
+            embed.add_field(name="!sri housou,!sri h",value="駅放送、車内放送を表示。後に-1~6を付けると表示する放送の種類を指定できる。",inline=False)
+            embed.add_field(name="!sri info",value="運行情報を表示。",inline=False)
+            
             await message.channel.send(embed=embed)
 
-        elif "housou" in message.content:
+        elif "!sri housou" in message.content or "!sri h" in message.content:
 
             onegai_syurui=[
                 "接近放送",
@@ -56,10 +59,20 @@ async def on_message(message):
                 "下北沢鉄道という架空の鉄道の到着車内放送を、次の形式に基づいて一つだけ出力してください。形式：「（列車運営会社）をご利用くださいまして、ありがとうございます。この電車は、（直通先路線）直通、（列車種別）、（駅名）行きです。」",
                 "下北沢鉄道という架空の鉄道の次駅車内放送を、次の形式に基づいて一つだけ出力してください。形式：「まもなく（列車が到着した駅名）、（列車が到着した駅名）。お出口は右側です。電車とホームの間が空いているところがありますので、足元にご注意ください。お降りの際はドア横のボタンを押してください。」",
             ]
+            
+            joken=["-1","-2","-3","-4","-5","-6"]
+            if any((a in message.content) for a in joken):
+                
+                m = message.content.partition('-')
+                bangou=int(m[2])
+                syurui_bangou=bangou-1
+                random_chokutsu=random_chokutsu=random.randint(0,3)
+                ISrandom="("+str(bangou)+")"
+            else:
+                syurui_bangou=random.randint(0,5)
+                random_chokutsu=random.randint(0,3)
+                ISrandom="(random)"
 
-        
-            syurui_bangou=random.randint(0,5)
-            random_chokutsu=random.randint(0,3)
 
 
             if random_chokutsu==0:
@@ -68,7 +81,7 @@ async def on_message(message):
                 chokutsu="この電車は直通しないため、案内放送の「（直通先路線）直通、」の部分を飛ばして出力してください"
 
             onegai=onegai_list[syurui_bangou]
-            embed_title=onegai_syurui[syurui_bangou]
+            embed_title=onegai_syurui[syurui_bangou] + ISrandom
 
 
             gemini_pro = genai.GenerativeModel("gemini-pro")
