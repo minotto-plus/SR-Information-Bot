@@ -36,7 +36,7 @@ async def on_message(message):
             embed = discord.Embed(
                 title="help",)
             embed.add_field(name="!sri help",value="ヘルプを表示。",inline=False)
-            embed.add_field(name="!sri housou,!sri h",value="駅放送、車内放送を表示。後に-1~6を付けると表示する放送の種類を指定できる。",inline=False)
+            embed.add_field(name="!sri housou,!sri h",value="駅放送、車内放送を表示。最後-1~6を付けると表示する放送の種類を指定できる。",inline=False)
             embed.add_field(name="!sri info",value="運行情報を表示。",inline=False)
             
             await message.channel.send(embed=embed)
@@ -93,9 +93,13 @@ async def on_message(message):
             await message.channel.send(embed=embed)
 
 
-        elif "info" in message.content:
-            answer = ""
+        elif "!sri info" in message.content:
+            onegai="架空の鉄道である下北沢鉄道の遅延情報を作成して。次の形式に基づいて一つだけ出力してください。「（駅名）駅で発生した（遅延理由）のため、（路線名）線の一部列車に約（最低分数）分~（最高分数）分以上の遅れがでています。」"
             embed_title="遅延情報"
+
+            gemini_pro = genai.GenerativeModel("gemini-pro")
+            prompt = onegai + "回答には一切のかぎかっこ記号を含めないでください。" + "以下が下北沢鉄道の情報です。所有する路線：下北沢本線。停車する駅：備中田所神代、野獣邸、下北沢、東北沢、軍畑、田所、遠野、三浦、木村、谷岡。直通先：「中オオン!・総武線」、「ゲイ備線」、「迫真線」。列車種別：普通、急行、特急。特急の名称：田所あずさ、快速ホームライナー屋上。特急の号数：114,514,810号のいずれか。"
+            answer = gemini_pro.generate_content(prompt)
             print(answer.text)
             # await message.channel.send(answer.text)
             embed = discord.Embed(title=embed_title,description=answer.text)
